@@ -27,15 +27,40 @@ task buildZip(type: Zip) {
 	includeEmptyDirs = false
 }
 
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	
+
 	implementation 'com.tencentcloudapi:tencentcloud-sdk-java:3.1.462'
 
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+
+task generateClassList(type: JavaExec, dependsOn: jar) {
+    main 'com.example.tencent_scf.DemoApplication'
+
+    classpath = files(
+            sourceSets.main.runtimeClasspath,
+            buildDir.toPath()
+                .resolve("libs/*SNAPSHOT.jar").toFile()
+    )
+    jvmArgs "-Xshare:off", "-XX:+UseAppCDS", "-XX:DumpLoadedClassList=classes.lst"
+}
+
+task generateAppCDSArchive(type: JavaExec, dependsOn: compileJava) {
+    main 'com.example.tencent_scf.DemoApplication'
+
+    classpath = files(
+            sourceSets.main.runtimeClasspath,
+            buildDir.toPath()
+                .resolve("libs/*SNAPSHOT.jar").toFile()
+    )
+    jvmArgs "-Xshare:dump", "-XX:+UseAppCDS", "-XX:SharedClassListFile=classes.lst",
+            "-XX:SharedArchiveFile=classes.jsa", "-Xlog:class+path=info"
 }

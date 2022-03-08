@@ -27,3 +27,9 @@
 ## 查看启动日志
 
 ![Check](https://user-images.githubusercontent.com/251222/157162241-1dc1de34-ed98-438b-9138-0f45bddf138e.jpg)
+
+
+## Reference
+
+- [Java 11 AppCDS example with Gradle](https://blog.jdbevan.com/2020/09/30/java-11-appcds-example-with-gradle/)
+- [深度好文：云函数 SCF + KonaJDK11 + Spring + 提速降存一把梭](https://segmentfault.com/a/1190000039714331)
