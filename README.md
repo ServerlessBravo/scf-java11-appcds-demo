@@ -1,6 +1,6 @@
-# 通过 Web 函数 Spring Boot应用
+# 通过 Web 函数 Spring Boot 应用
 
-## 本地编译打包
+## 本地编译
 
     rm -rf build
     gradle build
@@ -8,17 +8,23 @@
     # 导出类的列表
     gradle generateClassList
     # 生成共享文件
-    gradle generateAppCDSArchive 
+    gradle generateAppCDSArchive
+    # 本地以共享JSA文件的方式启动
+    gradle RunApplicationWithAppCDS
 
-## 查看部署目标
+## 本地打包
 
+    gradle buildZip
+
+    #查看部署目标
     tree build/distributions
-    
+
     build/distributions
     └── tencent_scf-0.0.1-SNAPSHOT.zip
 
 0 directories, 1 file
-## 部署到SCF
+
+## 部署到 SCF
 
 ![Deploy](https://user-images.githubusercontent.com/251222/157162205-d5f4b120-1ddf-4fce-a852-2bb094ff4575.jpg)
 
@@ -33,7 +39,6 @@
 ## 查看启动日志
 
 ![Check](https://user-images.githubusercontent.com/251222/157162241-1dc1de34-ed98-438b-9138-0f45bddf138e.jpg)
-
 
 ## Reference
 
