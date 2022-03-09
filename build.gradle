@@ -14,21 +14,6 @@ repositories {
 	maven { url 'https://repo.spring.io/release' }
 }
 
-task buildZip(type: Zip) {
-	dependsOn build
-	from(layout.buildDirectory){
-		include("libs/*SNAPSHOT.jar")
-	}
-	eachFile {
-		path = name
-	}
-	from "scf_bootstrap"
-	from "application.properties"
-
-	includeEmptyDirs = false
-}
-
-
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter'
@@ -42,27 +27,56 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-task generateClassList(type: JavaExec, dependsOn: jar) {
-    main 'com.example.tencent_scf.DemoApplication'
+Closure cl = {  buildDirectory ->  
+		fileTree(dir: buildDirectory).matching {
+			include "libs/*-SNAPSHOT.jar"
+		}
+	}
 
-	delete("${projectDir}/classes.lst")
- 
-    classpath = files(
-		sourceSets.main.runtimeClasspath,
-        buildDir.toPath().resolve("libs/tencent_scf-0.0.1-SNAPSHOT.jar").toFile()
-    )
-    jvmArgs "-Xshare:off", "-XX:+UseAppCDS", "-XX:DumpLoadedClassList=classes.lst"
+task generateClassList(type: JavaExec) {
+	doFirst {
+		delete("${projectDir}/classes.lst")
+	}
+
+	main = "-jar"
+	jvmArgs = [ 
+		"-Xshare:off", 
+		"-XX:+UseAppCDS", 
+		"-XX:DumpLoadedClassList=classes.lst"
+	]
+
+	args = [ cl(buildDir).getFiles().first() ]
 }
 
-task generateAppCDSArchive(type: JavaExec, dependsOn: compileJava) {
-    main 'com.example.tencent_scf.DemoApplication'
+task generateAppCDSArchive(type: JavaExec) {
+	doFirst {
+		delete("${projectDir}/classes.jsa")
+	}
 
-	delete("${projectDir}/classes.jsa")
-
-    classpath = files(
-		sourceSets.main.runtimeClasspath,
-        buildDir.toPath().resolve("libs/tencent_scf-0.0.1-SNAPSHOT.jar").toFile()
-    )
+	main = "-jar"
     jvmArgs "-Xshare:dump", "-XX:+UseAppCDS", "-XX:SharedClassListFile=classes.lst",
             "-XX:SharedArchiveFile=classes.jsa", "-Xlog:class+load=info", "-Xlog:class+path=info"
+
+	args = [ cl(buildDir).getFiles().first() ]
+}
+
+task RunApplicationWithAppCDS(type: JavaExec) {
+	main = "-jar"
+	jvmArgs "-Xshare:on", "-XX:+UseAppCDS", "-XX:SharedArchiveFile=classes.jsa"
+	args = [ cl(buildDir).getFiles().first() ]
+}
+
+task buildZip(type: Zip) {
+	from(layout.buildDirectory){
+		include("libs/*SNAPSHOT.jar")
+	}
+	eachFile {
+		path = name
+	}
+	from "scf_bootstrap"
+	from "application.properties"
+	from "classes.jsa"
+	from "classes.lst"
+
+	includeEmptyDirs = false
 }

@@ -2,7 +2,13 @@
 
 ## 本地编译打包
 
-    rm -rf build && gradle buildZip
+    rm -rf build
+    gradle build
+
+    # 导出类的列表
+    gradle generateClassList
+    # 生成共享文件
+    gradle generateAppCDSArchive 
 
 ## 查看部署目标
 
