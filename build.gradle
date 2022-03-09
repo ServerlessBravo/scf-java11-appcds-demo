@@ -8,6 +8,7 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
+
 repositories {
 	mavenCentral()
 	maven { url 'https://repo.spring.io/release' }
@@ -41,14 +42,14 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-
 task generateClassList(type: JavaExec, dependsOn: jar) {
     main 'com.example.tencent_scf.DemoApplication'
 
+	delete("${projectDir}/classes.lst")
+ 
     classpath = files(
-            sourceSets.main.runtimeClasspath,
-            buildDir.toPath()
-                .resolve("libs/*SNAPSHOT.jar").toFile()
+		sourceSets.main.runtimeClasspath,
+        buildDir.toPath().resolve("libs/tencent_scf-0.0.1-SNAPSHOT.jar").toFile()
     )
     jvmArgs "-Xshare:off", "-XX:+UseAppCDS", "-XX:DumpLoadedClassList=classes.lst"
 }
@@ -56,11 +57,12 @@ task generateClassList(type: JavaExec, dependsOn: jar) {
 task generateAppCDSArchive(type: JavaExec, dependsOn: compileJava) {
     main 'com.example.tencent_scf.DemoApplication'
 
+	delete("${projectDir}/classes.jsa")
+
     classpath = files(
-            sourceSets.main.runtimeClasspath,
-            buildDir.toPath()
-                .resolve("libs/*SNAPSHOT.jar").toFile()
+		sourceSets.main.runtimeClasspath,
+        buildDir.toPath().resolve("libs/tencent_scf-0.0.1-SNAPSHOT.jar").toFile()
     )
     jvmArgs "-Xshare:dump", "-XX:+UseAppCDS", "-XX:SharedClassListFile=classes.lst",
-            "-XX:SharedArchiveFile=classes.jsa", "-Xlog:class+path=info"
+            "-XX:SharedArchiveFile=classes.jsa", "-Xlog:class+load=info", "-Xlog:class+path=info"
 }

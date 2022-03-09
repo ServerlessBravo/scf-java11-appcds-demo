@@ -39,3 +39,4 @@ out/
 .DS_Store
 *.lst
 *.jsa
+logs.txt
