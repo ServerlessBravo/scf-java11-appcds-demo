@@ -8,6 +8,8 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
+def appCDSDir = "${projectDir}/appcds"
+def snapshotJarName = "${rootProject.name}-${version}.jar"
 
 repositories {
 	mavenCentral()
@@ -27,56 +29,59 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-Closure cl = {  buildDirectory ->  
-		fileTree(dir: buildDirectory).matching {
-			include "libs/*-SNAPSHOT.jar"
-		}
-	}
-
-task generateClassList(type: JavaExec) {
+task prepareCDSFiles(type: Copy) {
 	doFirst {
-		delete("${projectDir}/classes.lst")
+		delete(appCDSDir)
+		mkdir(appCDSDir)
 	}
+	from(layout.buildDirectory){
+		include("libs/${snapshotJarName}")
+	}
+	from "scf_bootstrap"
+	from "application.properties"
+	eachFile {
+      path = name
+    }
+	includeEmptyDirs = false
 
+	into appCDSDir
+}
+
+task generateClassList(type: JavaExec, dependsOn:  prepareCDSFiles) {
+	doFirst {
+		delete("${appCDSDir}/classes.lst")
+	}
+	
+	workingDir = appCDSDir
 	main = "-jar"
 	jvmArgs = [ 
 		"-Xshare:off", 
 		"-XX:+UseAppCDS", 
 		"-XX:DumpLoadedClassList=classes.lst"
 	]
-
-	args = [ cl(buildDir).getFiles().first() ]
+	args snapshotJarName
 }
 
 task generateAppCDSArchive(type: JavaExec) {
 	doFirst {
-		delete("${projectDir}/classes.jsa")
+		delete("${appCDSDir}/classes.jsa")
 	}
 
+	workingDir = appCDSDir
 	main = "-jar"
     jvmArgs "-Xshare:dump", "-XX:+UseAppCDS", "-XX:SharedClassListFile=classes.lst",
             "-XX:SharedArchiveFile=classes.jsa", "-Xlog:class+load=info", "-Xlog:class+path=info"
 
-	args = [ cl(buildDir).getFiles().first() ]
+	args snapshotJarName
 }
 
 task RunApplicationWithAppCDS(type: JavaExec) {
+	workingDir = appCDSDir
 	main = "-jar"
 	jvmArgs "-Xshare:on", "-XX:+UseAppCDS", "-XX:SharedArchiveFile=classes.jsa"
-	args = [ cl(buildDir).getFiles().first() ]
+	args snapshotJarName
 }
 
 task buildZip(type: Zip) {
-	from(layout.buildDirectory){
-		include("libs/*SNAPSHOT.jar")
-	}
-	eachFile {
-		path = name
-	}
-	from "scf_bootstrap"
-	from "application.properties"
-	from "classes.jsa"
-	from "classes.lst"
-
-	includeEmptyDirs = false
+	from(appCDSDir)
 }

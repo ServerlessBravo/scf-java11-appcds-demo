@@ -1,2 +1,2 @@
 #!/bin/bash
-/var/lang/java11/bin/java -Xshare:on -XX:+UseAppCDS -XX:SharedArchiveFile=classes.jsa -jar tencent_scf-0.0.1-SNAPSHOT.jar
+/var/lang/java11/bin/java -Xshare:on -XX:+UseAppCDS -XX:SharedArchiveFile=classes.jsa -Xlog:class+path=info -jar tencent_scf-0.0.1-SNAPSHOT.jar
