@@ -5,6 +5,8 @@
     rm -rf build
     gradle build
 
+## 本地测试AppCDS
+
     # 导出类的列表
     gradle generateClassList
     # 生成共享文件
@@ -12,7 +14,7 @@
     # 本地以共享JSA文件的方式启动
     gradle RunApplicationWithAppCDS
 
-## 本地打包
+## 打包部署（不启用AppCDS）
 
     gradle buildZip
 
@@ -24,6 +26,15 @@
 
 0 directories, 1 file
 
+## 打包部署（启用AppCDS）
+    
+    gradle buildZipWithAppCDS
+
+    #查看部署目标
+    tree build/distributions
+
+    build/distributions
+    └── tencent_scf-0.0.1-SNAPSHOT.zip
 ## 部署到 SCF
 
 ![Deploy](https://user-images.githubusercontent.com/251222/157162205-d5f4b120-1ddf-4fce-a852-2bb094ff4575.jpg)

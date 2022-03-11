@@ -1,48 +1,6 @@
 #!/bin/bash
 
-echo "Listing all environment variables"
-echo "--------------------------------"
-printenv
-echo "--------------------------------"
-
-# JAVA_COMMAND="java"
-# SHARED_APPCDS_PATH="/tmp"
-
 JAVA_COMMAND="/var/lang/java11/bin/java"
-SHARED_APPCDS_PATH="/mnt"
-
 JAR_ARCHIVE_PATH="tencent_scf-0.0.1-SNAPSHOT.jar"
-APPCDS_PREFIX="${JAR_ARCHIVE_PATH%.jar}_classes"
-CLASS_LIST_PATH="${SHARED_APPCDS_PATH}/${APPCDS_PREFIX}.lst"
-CDS_ARCHIVE_PATH="${SHARED_APPCDS_PATH}/${APPCDS_PREFIX}.jsa"
 
-## Will hang here to export class list for 1st time
-if [ ! -f $CLASS_LIST_PATH ]
-then
-    $JAVA_COMMAND -Xshare:off \
-        -XX:+UseAppCDS \
-        -XX:DumpLoadedClassList=$CLASS_LIST_PATH \
-        -jar $JAR_ARCHIVE_PATH
-    echo "Generating class list at ${CLASS_LIST_PATH} successfully"
-    exit 0
-fi
-
-## Export jsa and continue to run
-if [ ! -f $CDS_ARCHIVE_PATH ]
-then
-    $JAVA_COMMAND -Xshare:dump \
-        -XX:+UseAppCDS \
-        -XX:SharedClassListFile=$CLASS_LIST_PATH \
-        -XX:SharedArchiveFile=$CDS_ARCHIVE_PATH \
-        -Xlog:class+load=info \
-        -Xlog:class+path=info \
-        -jar $JAR_ARCHIVE_PATH
-    echo "Generating CDS archive at ${CDS_ARCHIVE_PATH} successfully"
-fi
-
-## Start with shared JSA on CDS
-
-$JAVA_COMMAND -Xshare:on \
-    -XX:+UseAppCDS \
-    -XX:SharedArchiveFile=$CDS_ARCHIVE_PATH \
-    -jar $JAR_ARCHIVE_PATH
+$JAVA_COMMAND -jar $JAR_ARCHIVE_PATH

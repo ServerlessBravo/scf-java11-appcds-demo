@@ -94,3 +94,20 @@ task buildZip(type: Zip) {
 	from "application.properties"
 	includeEmptyDirs = false
 }
+
+task buildZipWithAppCDS(type: Zip) {
+	dependsOn build
+	from(layout.buildDirectory){
+		include("libs/*SNAPSHOT.jar")
+	}
+	eachFile {
+		path = name
+	}
+
+	from("scf_bootstrap_appcds") {
+		rename { 'scf_bootstrap' }
+	}
+	
+	from "application.properties"
+	includeEmptyDirs = false
+}
